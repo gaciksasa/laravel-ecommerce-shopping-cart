@@ -1,59 +1,459 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel E-Commerce Shopping Cart
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A full-featured e-commerce shopping cart application built with Laravel Breeze and React (Inertia.js), featuring database-backed cart storage, automated stock management, queue-based email notifications, and scheduled reporting.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Core Functionality
+- **Product Catalog**: Browse products with pagination, stock levels, and pricing
+- **Database-Backed Shopping Cart**: Persistent cart storage associated with authenticated users
+- **Cart Management**: Add items, update quantities, remove items with real-time validation
+- **Order Checkout**: Secure order processing with database transactions and stock locking
+- **Stock Management**: Automatic stock reduction on checkout with concurrency protection
+- **Order History**: View past orders with expandable item details
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Background Jobs & Notifications
+- **Low Stock Alerts**: Automated email notifications when product stock ≤ 5 units (queued)
+- **Daily Sales Reports**: Scheduled reports sent at 23:59 daily with sales breakdown
+- **Queue System**: Database-driven queue for reliable background processing
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Technical Features
+- **Authentication**: Laravel Breeze with React (Inertia.js)
+- **Service Layer Pattern**: Separation of business logic (CartService, OrderService, StockService)
+- **Form Request Validation**: Request validation with authorization checks
+- **Database Transactions**: ACID compliance with row-level locking to prevent overselling
+- **Price Snapshots**: Historical price accuracy in order items
+- **Responsive Design**: Mobile-friendly UI with Tailwind CSS
 
-## Learning Laravel
+## Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- **Backend**: Laravel 12.44.0 (PHP 8.2+)
+- **Frontend**: React with Inertia.js
+- **Styling**: Tailwind CSS
+- **Database**: MySQL
+- **Queue**: Database driver
+- **Email**: Log driver (emails written to `storage/logs/laravel.log`)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Installation
 
-## Laravel Sponsors
+### Prerequisites
+- PHP 8.2 or higher
+- Composer
+- Node.js & npm
+- MySQL database
+- Git
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Setup Instructions
 
-### Premium Partners
+1. **Clone the repository**
+```bash
+git clone https://github.com/YOUR_USERNAME/laravel-ecommerce-shopping-cart.git
+cd laravel-ecommerce-shopping-cart
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+2. **Install PHP dependencies**
+```bash
+composer install
+```
 
-## Contributing
+3. **Install JavaScript dependencies**
+```bash
+npm install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+4. **Environment configuration**
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## Code of Conduct
+5. **Configure database in `.env`**
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravel_ecommerce
+DB_USERNAME=root
+DB_PASSWORD=your_password
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+QUEUE_CONNECTION=database
+MAIL_MAILER=log
+```
 
-## Security Vulnerabilities
+6. **Create database**
+```bash
+# Using MySQL CLI
+mysql -u root -p -e "CREATE DATABASE laravel_ecommerce CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Or using PHP script (if MySQL CLI not available)
+php -r "
+\$pdo = new PDO('mysql:host=127.0.0.1', 'root', 'your_password');
+\$pdo->exec('CREATE DATABASE IF NOT EXISTS laravel_ecommerce CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+echo 'Database created successfully!';
+"
+```
+
+7. **Run migrations and seeders**
+```bash
+php artisan migrate --seed
+```
+
+This will create all tables and seed:
+- Admin user (email: `admin@example.com`, password: `password`)
+- 10 sample products with varying stock levels
+
+8. **Build frontend assets**
+```bash
+# Development
+npm run dev
+
+# Production
+npm run build
+```
+
+9. **Start the application**
+
+Terminal 1 - Web server:
+```bash
+php artisan serve
+```
+
+Terminal 2 - Queue worker:
+```bash
+php artisan queue:work --tries=3
+```
+
+Terminal 3 - Task scheduler (for daily reports):
+```bash
+# Development
+php artisan schedule:work
+
+# Production: Add to crontab
+* * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
+```
+
+10. **Access the application**
+```
+http://localhost:8000
+```
+
+## Default Credentials
+
+- **Admin User**
+  - Email: `admin@example.com`
+  - Password: `password`
+
+## Database Schema
+
+### Products Table
+- `id`, `name`, `description`, `price`, `stock_quantity`, `timestamps`
+- Index on `stock_quantity` for low stock queries
+
+### Cart Items Table
+- `id`, `user_id`, `product_id`, `quantity`, `timestamps`
+- Unique constraint on (`user_id`, `product_id`)
+- Foreign keys: `user_id` → users, `product_id` → products
+
+### Orders Table
+- `id`, `user_id`, `total_amount`, `status` (enum: pending/processing/completed/cancelled), `timestamps`
+- Indexes on `user_id`, `created_at`, `status`
+
+### Order Items Table
+- `id`, `order_id`, `product_id`, `quantity`, `price` (snapshot), `timestamps`
+- Foreign keys: `order_id` → orders, `product_id` → products (restrict on delete)
+
+## Application Architecture
+
+### Service Layer
+
+**CartService** ([app/Services/CartService.php](app/Services/CartService.php))
+- `addToCart($user, $productId, $quantity)` - Adds items with stock validation
+- `updateCartItem($cartItem, $quantity)` - Updates quantity with validation
+- `removeFromCart($cartItem)` - Removes item from cart
+- `getCartItems($user)` - Retrieves user's cart items
+- `getCartTotal($user)` - Calculates total cart value
+- `clearCart($user)` - Empties user's cart
+
+**OrderService** ([app/Services/OrderService.php](app/Services/OrderService.php))
+- `createOrderFromCart($user)` - Creates order with transaction & locks
+
+**StockService** ([app/Services/StockService.php](app/Services/StockService.php))
+- `reduceStock($product, $quantity)` - Decrements stock
+- `checkAndNotifyLowStock($product)` - Dispatches low stock job if ≤ 5
+
+### Queue Jobs
+
+**ProcessLowStockNotification** ([app/Jobs/ProcessLowStockNotification.php](app/Jobs/ProcessLowStockNotification.php))
+- Triggered when stock ≤ 5 units
+- Sends email to `admin@example.com`
+- Includes product name, current stock, threshold
+
+**SendDailySalesReport** ([app/Jobs/SendDailySalesReport.php](app/Jobs/SendDailySalesReport.php))
+- Scheduled daily at 23:59 (configured in [routes/console.php](routes/console.php#L12-L14))
+- Aggregates orders created that day
+- Sends report with total orders, revenue, products sold breakdown
+
+### Form Requests
+
+**AddToCartRequest** ([app/Http/Requests/AddToCartRequest.php](app/Http/Requests/AddToCartRequest.php))
+- Validates `product_id` (exists) and `quantity` (integer, min: 1)
+- Authorization: User must be authenticated
+
+**UpdateCartItemRequest** ([app/Http/Requests/UpdateCartItemRequest.php](app/Http/Requests/UpdateCartItemRequest.php#L14))
+- Validates `quantity` (integer, min: 1)
+- Authorization: Cart item must belong to authenticated user
+
+## Routes
+
+### Public Routes
+- `GET /` - Product listing (redirects to products.index)
+
+### Authenticated Routes
+- `GET /cart` - View cart
+- `POST /cart` - Add item to cart
+- `PATCH /cart/{cartItem}` - Update cart item quantity
+- `DELETE /cart/{cartItem}` - Remove cart item
+- `GET /orders` - View order history
+- `POST /orders` - Checkout (create order from cart)
+
+## Testing Guide
+
+### Manual Testing Workflow
+
+1. **Register a new user**
+   - Navigate to `/register`
+   - Create an account and verify email (auto-verified)
+
+2. **Browse products**
+   - Visit homepage to see 15 products per page
+   - Note stock levels (color-coded: green > 5, yellow ≤ 5, red = 0)
+
+3. **Add items to cart**
+   - Click "Add to Cart" on available products
+   - Verify success message appears
+   - Try adding out-of-stock items (button should be disabled)
+
+4. **View and manage cart**
+   - Navigate to Cart page
+   - Increase/decrease quantities using +/- buttons
+   - Verify subtotals update correctly
+   - Remove items using "Remove" button
+   - Verify total calculation
+
+5. **Checkout**
+   - Click "Checkout" button
+   - Verify redirect to Orders page with success message
+   - Check that cart is now empty
+   - Return to Products page and verify stock quantities decreased
+
+6. **View orders**
+   - Navigate to Orders page
+   - Expand order to view items
+   - Verify prices match purchase time (not current prices)
+
+7. **Test low stock notification**
+   - Add items to cart that will reduce stock to ≤ 5
+   - Complete checkout
+   - Check `storage/logs/laravel.log` for low stock email
+   - Look for "Low Stock Alert" subject line
+
+8. **Test daily sales report**
+```bash
+# Manually trigger the job
+php artisan tinker
+>>> dispatch(new \App\Jobs\SendDailySalesReport);
+>>> exit
+
+# Check storage/logs/laravel.log for report email
+```
+
+9. **Test concurrency (optional)**
+   - Open cart in two browser tabs
+   - Try checking out simultaneously with products having low stock
+   - Verify only one checkout succeeds or stock validation prevents overselling
+
+### Queue Testing
+
+Start the queue worker in a separate terminal:
+```bash
+php artisan queue:work --verbose
+```
+
+Watch for job processing:
+- Low stock notifications appear when stock ≤ 5
+- Failed jobs are logged with stack traces
+- Retry failed jobs: `php artisan queue:retry all`
+
+### Email Inspection
+
+All emails are logged to `storage/logs/laravel.log`:
+```bash
+# Tail the log file
+tail -f storage/logs/laravel.log
+
+# Or view on Windows
+Get-Content storage\logs\laravel.log -Wait
+```
+
+## Project Structure
+
+```
+app/
+├── Http/
+│   ├── Controllers/
+│   │   ├── CartController.php
+│   │   ├── OrderController.php
+│   │   └── ProductController.php
+│   └── Requests/
+│       ├── AddToCartRequest.php
+│       └── UpdateCartItemRequest.php
+├── Jobs/
+│   ├── ProcessLowStockNotification.php
+│   └── SendDailySalesReport.php
+├── Mail/
+│   ├── DailySalesReport.php
+│   └── LowStockAlert.php
+├── Models/
+│   ├── CartItem.php
+│   ├── Order.php
+│   ├── OrderItem.php
+│   ├── Product.php
+│   └── User.php
+└── Services/
+    ├── CartService.php
+    ├── OrderService.php
+    └── StockService.php
+
+resources/
+├── js/
+│   ├── Components/
+│   ├── Layouts/
+│   │   └── AuthenticatedLayout.jsx
+│   └── Pages/
+│       ├── Cart/
+│       │   └── Index.jsx
+│       ├── Orders/
+│       │   └── Index.jsx
+│       └── Products/
+│           └── Index.jsx
+└── views/
+    └── emails/
+        ├── daily-sales-report.blade.php
+        └── low-stock-alert.blade.php
+```
+
+## GitHub Repository Setup
+
+To push this project to GitHub:
+
+1. **Create a new repository on GitHub**
+   - Go to https://github.com/new
+   - Name: `laravel-ecommerce-shopping-cart`
+   - Visibility: Public or Private
+   - Do NOT initialize with README (we already have one)
+
+2. **Add remote and push**
+```bash
+git remote add origin https://github.com/YOUR_USERNAME/laravel-ecommerce-shopping-cart.git
+git branch -M main
+git push -u origin main
+```
+
+3. **Add collaborator** (GitHub web interface)
+   - Go to repository Settings → Collaborators
+   - Click "Add people"
+   - Search for and add: `dylanmichaelryan`
+
+## Key Implementation Details
+
+### Stock Concurrency Control
+Order creation uses database transactions with row-level locks ([app/Services/OrderService.php](app/Services/OrderService.php#L20-L56)):
+```php
+DB::transaction(function () {
+    $product = Product::lockForUpdate()->find($productId);
+    // Verify stock and create order...
+});
+```
+
+### Low Stock Notification Trigger
+Dispatched after stock reduction ([app/Services/StockService.php](app/Services/StockService.php#L20-L25)):
+```php
+if ($product->isLowStock()) {
+    ProcessLowStockNotification::dispatch($product);
+}
+```
+
+### Task Scheduler Configuration
+Daily report scheduled in [routes/console.php](routes/console.php#L12-L14):
+```php
+Schedule::job(new SendDailySalesReport)
+    ->dailyAt('23:59')
+    ->timezone(config('app.timezone'));
+```
+
+## Troubleshooting
+
+### Issue: Queue jobs not processing
+**Solution**: Ensure queue worker is running:
+```bash
+php artisan queue:work --verbose
+```
+
+### Issue: Emails not appearing in logs
+**Solution**:
+1. Check `.env` has `MAIL_MAILER=log`
+2. Verify `storage/logs/laravel.log` exists and is writable
+3. Run: `php artisan config:clear`
+
+### Issue: Stock quantity not updating
+**Solution**: Check database transaction isolation level and ensure queue worker is processing jobs
+
+### Issue: Frontend changes not reflecting
+**Solution**:
+```bash
+npm run build
+php artisan optimize:clear
+```
+
+### Issue: MySQL string length error
+**Solution**: Already configured in [app/Providers/AppServiceProvider.php](app/Providers/AppServiceProvider.php#L15-L17):
+```php
+Schema::defaultStringLength(191);
+```
+
+## Development Commands
+
+```bash
+# Clear all caches
+php artisan optimize:clear
+
+# View scheduled tasks
+php artisan schedule:list
+
+# View queue jobs
+php artisan queue:monitor
+
+# Fresh migration with seed
+php artisan migrate:fresh --seed
+
+# Run tests (if configured)
+php artisan test
+
+# Check routes
+php artisan route:list
+
+# Format code (if configured)
+./vendor/bin/pint
+```
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Credits
+
+Built with [Laravel](https://laravel.com) and [Laravel Breeze](https://laravel.com/docs/starter-kits#laravel-breeze).
+
+---
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
