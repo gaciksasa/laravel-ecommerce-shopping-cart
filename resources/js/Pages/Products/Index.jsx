@@ -1,31 +1,35 @@
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import ApplicationLogo from '@/Components/ApplicationLogo';
+import { useState } from 'react';
 
 export default function Index({ products }) {
     const { auth, flash } = usePage().props;
-    const { data, setData, post, processing } = useForm({
-        product_id: '',
-        quantity: 1,
-    });
+    const [processing, setProcessing] = useState(false);
 
     const handleAddToCart = (productId) => {
-        setData({ product_id: productId, quantity: 1 });
-        post(route('cart.store'), {
+        setProcessing(true);
+        router.post(route('cart.store'), {
+            product_id: productId,
+            quantity: 1,
+        }, {
             preserveScroll: true,
             onSuccess: () => {
-                setData({ product_id: '', quantity: 1 });
+                setProcessing(false);
+                console.log('Item added to cart successfully!');
+            },
+            onError: (errors) => {
+                setProcessing(false);
+                console.log('Error adding to cart:', errors);
+            },
+            onFinish: () => {
+                setProcessing(false);
             },
         });
     };
 
-    return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Products
-                </h2>
-            }
-        >
+    const ProductContent = () => (
+        <>
             <Head title="Products" />
 
             <div className="py-12">
@@ -124,6 +128,56 @@ export default function Index({ products }) {
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </>
+    );
+
+    // If user is authenticated, use AuthenticatedLayout
+    if (auth.user) {
+        return (
+            <AuthenticatedLayout
+                header={
+                    <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                        Products
+                    </h2>
+                }
+            >
+                <ProductContent />
+            </AuthenticatedLayout>
+        );
+    }
+
+    // If user is a guest, use a simple public layout
+    return (
+        <div className="min-h-screen bg-gray-100">
+            <nav className="border-b border-gray-100 bg-white">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="flex h-16 justify-between">
+                        <div className="flex shrink-0 items-center">
+                            <Link href="/">
+                                <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
+                            </Link>
+                            <span className="ml-4 text-xl font-semibold text-gray-800">
+                                Laravel E-Commerce
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <Link
+                                href={route('login')}
+                                className="rounded-md px-4 py-2 text-gray-700 hover:text-gray-900"
+                            >
+                                Log in
+                            </Link>
+                            <Link
+                                href={route('register')}
+                                className="rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+                            >
+                                Register
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <ProductContent />
+        </div>
     );
 }
