@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"c:\\\\wamp64\\\\www\\\\laravel-ecommerce-shopping-cart\" /s /b)",
+      "Bash(composer create-project:*)",
+      "Bash(robocopy:*)",
+      "Bash(powershell -Command \"Get-ChildItem -Path temp-laravel -Recurse | Move-Item -Destination . -Force; Remove-Item temp-laravel -Recurse -Force\")",
+      "Bash(php artisan:*)",
+      "Bash(composer require:*)",
+      "Bash(mysql:*)",
+      "Bash(php:*)",
+      "Bash(del create_database.php)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(npm run build:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
