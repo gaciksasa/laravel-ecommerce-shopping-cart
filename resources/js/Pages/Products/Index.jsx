@@ -54,12 +54,39 @@ export default function Index({ products }) {
                                         key={product.id}
                                         className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
                                     >
+                                        {/* Product Image */}
+                                        <Link href={route('products.show', product.id)}>
+                                            <div className="aspect-square overflow-hidden bg-gray-100">
+                                                {product.image_url ? (
+                                                    <img
+                                                        src={product.image_url}
+                                                        alt={product.name}
+                                                        className="h-full w-full object-cover transition hover:scale-105"
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-full items-center justify-center text-gray-400">
+                                                        <svg
+                                                            className="h-16 w-16"
+                                                            fill="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                                                        </svg>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </Link>
                                         <div className="p-6">
-                                            <h3 className="mb-2 text-xl font-semibold text-gray-900">
-                                                {product.name}
-                                            </h3>
-                                            <p className="mb-4 text-sm text-gray-600">
-                                                {product.description}
+                                            <Link
+                                                href={route('products.show', product.id)}
+                                                className="group"
+                                            >
+                                                <h3 className="mb-2 text-xl font-semibold text-gray-900 group-hover:text-indigo-600">
+                                                    {product.name}
+                                                </h3>
+                                            </Link>
+                                            <p className="mb-4 line-clamp-2 text-sm text-gray-600">
+                                                {product.description || 'No description available'}
                                             </p>
                                             <div className="mb-4 flex items-center justify-between">
                                                 <span className="text-2xl font-bold text-gray-900">
@@ -79,27 +106,28 @@ export default function Index({ products }) {
                                                         : `${product.stock_quantity} in stock`}
                                                 </span>
                                             </div>
-                                            {auth.user ? (
-                                                <button
-                                                    onClick={() => handleAddToCart(product.id)}
-                                                    disabled={
-                                                        product.stock_quantity === 0 ||
-                                                        processing
-                                                    }
-                                                    className="w-full rounded-md bg-indigo-600 px-4 py-2 text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                                                >
-                                                    {product.stock_quantity === 0
-                                                        ? 'Out of Stock'
-                                                        : 'Add to Cart'}
-                                                </button>
-                                            ) : (
+                                            <div className="flex gap-2">
                                                 <Link
-                                                    href={route('login')}
-                                                    className="block w-full rounded-md bg-indigo-600 px-4 py-2 text-center text-white transition hover:bg-indigo-700"
+                                                    href={route('products.show', product.id)}
+                                                    className="flex-1 rounded-md border border-indigo-600 px-4 py-2 text-center text-indigo-600 transition hover:bg-indigo-50"
                                                 >
-                                                    Login to Purchase
+                                                    View Details
                                                 </Link>
-                                            )}
+                                                {auth.user && (
+                                                    <button
+                                                        onClick={() => handleAddToCart(product.id)}
+                                                        disabled={
+                                                            product.stock_quantity === 0 ||
+                                                            processing
+                                                        }
+                                                        className="flex-1 rounded-md bg-indigo-600 px-4 py-2 text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                                                    >
+                                                        {product.stock_quantity === 0
+                                                            ? 'Out of Stock'
+                                                            : 'Add to Cart'}
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}

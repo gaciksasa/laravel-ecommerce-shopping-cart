@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::get('/', [ProductController::class, 'index'])->name('products.index');
+Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
 // Authenticated routes
 Route::middleware(['auth', 'verified'])->group(function () {
