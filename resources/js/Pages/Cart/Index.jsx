@@ -1,32 +1,40 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 
 export default function Index({ cartItems, cartTotal }) {
     const { flash } = usePage().props;
-    const { delete: destroy, processing: deleteProcessing } = useForm();
-    const { data, setData, patch, processing: updateProcessing } = useForm();
+    const [processing, setProcessing] = useState(false);
 
     const handleUpdateQuantity = (cartItemId, currentQuantity, action) => {
         const newQuantity = action === 'increment' ? currentQuantity + 1 : currentQuantity - 1;
 
         if (newQuantity < 1) return;
 
-        patch(route('cart.update', cartItemId), {
-            data: { quantity: newQuantity },
+        setProcessing(true);
+        router.patch(route('cart.update', cartItemId), {
+            quantity: newQuantity,
+        }, {
             preserveScroll: true,
+            onFinish: () => setProcessing(false),
         });
     };
 
     const handleRemoveItem = (cartItemId) => {
         if (confirm('Are you sure you want to remove this item from your cart?')) {
-            destroy(route('cart.destroy', cartItemId), {
+            setProcessing(true);
+            router.delete(route('cart.destroy', cartItemId), {
                 preserveScroll: true,
+                onFinish: () => setProcessing(false),
             });
         }
     };
 
     const handleCheckout = () => {
-        useForm().post(route('orders.store'));
+        setProcessing(true);
+        router.post(route('orders.store'), {}, {
+            onFinish: () => setProcessing(false),
+        });
     };
 
     return (
@@ -114,7 +122,7 @@ export default function Index({ cartItems, cartTotal }) {
                                                                     }
                                                                     disabled={
                                                                         item.quantity <= 1 ||
-                                                                        updateProcessing
+                                                                        processing
                                                                     }
                                                                     className="rounded-md bg-gray-200 px-3 py-1 text-sm font-semibold hover:bg-gray-300 disabled:cursor-not-allowed disabled:bg-gray-100"
                                                                 >
@@ -134,7 +142,7 @@ export default function Index({ cartItems, cartTotal }) {
                                                                     disabled={
                                                                         item.quantity >=
                                                                             item.product.stock_quantity ||
-                                                                        updateProcessing
+                                                                        processing
                                                                     }
                                                                     className="rounded-md bg-gray-200 px-3 py-1 text-sm font-semibold hover:bg-gray-300 disabled:cursor-not-allowed disabled:bg-gray-100"
                                                                 >
@@ -148,7 +156,7 @@ export default function Index({ cartItems, cartTotal }) {
                                                         <td className="whitespace-nowrap px-6 py-4 text-sm">
                                                             <button
                                                                 onClick={() => handleRemoveItem(item.id)}
-                                                                disabled={deleteProcessing}
+                                                                disabled={processing}
                                                                 className="text-red-600 hover:text-red-900 disabled:text-gray-400"
                                                             >
                                                                 Remove
