@@ -13,23 +13,37 @@ A full-featured e-commerce shopping cart application built with Laravel Breeze a
 - **Order History**: View past orders with expandable item details
 
 ### Background Jobs & Notifications
-- **Low Stock Alerts**: Automated email notifications when product stock ≤ 5 units (queued)
+- **Low Stock Reports**: Daily consolidated report at 09:00 listing all products with stock < 5 units
 - **Daily Sales Reports**: Scheduled reports sent at 23:59 daily with sales breakdown
 - **Queue System**: Database-driven queue for reliable background processing
 
 ### Technical Features
 - **Authentication**: Laravel Breeze with React (Inertia.js)
+- **TypeScript**: Full TypeScript support with TSX components for type safety
 - **Service Layer Pattern**: Separation of business logic (CartService, OrderService, StockService)
 - **Form Request Validation**: Request validation with authorization checks
 - **Database Transactions**: ACID compliance with row-level locking to prevent overselling
 - **Price Snapshots**: Historical price accuracy in order items
+- **Real-Time Stock Updates**: User-specific available stock display with color-coded indicators
+- **Modern UI**: Contemporary light color scheme with Slate/Sky palette
 - **Responsive Design**: Mobile-friendly UI with Tailwind CSS
+
+### UI/UX Features
+- **Real-Time Stock Display**: Available stock updates instantly when adding to cart
+- **Color-Coded Stock Indicators**:
+  - 🟢 Green: More than 5 units available
+  - 🟡 Yellow: 1-5 units available (low stock warning)
+  - 🔴 Red: Out of stock
+- **User-Specific Stock**: Shows `stock_quantity - quantity_in_cart` for personalized availability
+- **Toast Notifications**: Non-intrusive success/error messages using react-hot-toast
+- **Streamlined Navigation**: Orders moved to user dropdown for cleaner interface
+- **Modern Color Palette**: Slate and Sky tones for contemporary, professional look
 
 ## Tech Stack
 
 - **Backend**: Laravel 12.44.0 (PHP 8.2+)
-- **Frontend**: React with Inertia.js
-- **Styling**: Tailwind CSS
+- **Frontend**: React 18 with Inertia.js and TypeScript
+- **Styling**: Tailwind CSS 3.x
 - **Database**: MySQL
 - **Queue**: Database driver
 - **Email**: Mailtrap (development), SMTP (production)
@@ -206,15 +220,18 @@ http://localhost:8000
 
 ### Queue Jobs
 
-**ProcessLowStockNotification** ([app/Jobs/ProcessLowStockNotification.php](app/Jobs/ProcessLowStockNotification.php))
-- Triggered when stock ≤ 5 units
-- Sends email to `admin@example.com`
-- Includes product name, current stock, threshold
+**SendLowStockReport** ([app/Jobs/SendLowStockReport.php](app/Jobs/SendLowStockReport.php))
+- Scheduled daily at 09:00 (configured in [routes/console.php](routes/console.php#L17-L19))
+- Checks all products with `stock_quantity < 5`
+- Sends consolidated report to `info@gacikdesign.com`
+- Includes product names, current stock levels, and status indicators
+- Only sends email if low stock products are found
 
 **SendDailySalesReport** ([app/Jobs/SendDailySalesReport.php](app/Jobs/SendDailySalesReport.php))
-- Scheduled daily at 23:59 (configured in [routes/console.php](routes/console.php#L12-L14))
+- Scheduled daily at 23:59 (configured in [routes/console.php](routes/console.php#L13-L15))
 - Aggregates orders created that day
 - Sends report with total orders, revenue, products sold breakdown
+- Sent to `info@gacikdesign.com`
 
 ### Form Requests
 
@@ -249,12 +266,15 @@ http://localhost:8000
 
 2. **Browse products**
    - Visit homepage to see 15 products per page
-   - Note stock levels (color-coded: green > 5, yellow ≤ 5, red = 0)
+   - Note available stock levels (user-specific: stock_quantity - quantity_in_cart)
+   - Color indicators: green (> 5), yellow (1-5), red (out of stock)
 
 3. **Add items to cart**
    - Click "Add to Cart" on available products
-   - Verify success message appears
+   - Verify success message appears via toast notification
+   - Watch available stock decrease in real-time
    - Try adding out-of-stock items (button should be disabled)
+   - On product details page, adjust quantity with +/- buttons
 
 4. **View and manage cart**
    - Navigate to Cart page
@@ -274,11 +294,16 @@ http://localhost:8000
    - Expand order to view items
    - Verify prices match purchase time (not current prices)
 
-7. **Test low stock notification**
-   - Add items to cart that will reduce stock to ≤ 5
-   - Complete checkout
-   - Check your Mailtrap inbox for "Low Stock Alert" email
-   - Verify it contains product name and current stock level
+7. **Test low stock report**
+```bash
+# Manually trigger the low stock report
+php artisan tinker
+>>> dispatch(new \App\Jobs\SendLowStockReport);
+>>> exit
+
+# Check your Mailtrap inbox for the consolidated low stock report
+# Report lists all products with stock < 5 in a table format
+```
 
 8. **Test daily sales report**
 ```bash
@@ -339,11 +364,12 @@ app/
 │       ├── AddToCartRequest.php
 │       └── UpdateCartItemRequest.php
 ├── Jobs/
-│   ├── ProcessLowStockNotification.php
+│   ├── SendLowStockReport.php
 │   └── SendDailySalesReport.php
 ├── Mail/
 │   ├── DailySalesReport.php
-│   └── LowStockAlert.php
+│   ├── LowStockAlert.php (legacy)
+│   └── LowStockReport.php
 ├── Models/
 │   ├── CartItem.php
 │   ├── Order.php
@@ -359,18 +385,24 @@ resources/
 ├── js/
 │   ├── Components/
 │   ├── Layouts/
-│   │   └── AuthenticatedLayout.jsx
-│   └── Pages/
-│       ├── Cart/
-│       │   └── Index.jsx
-│       ├── Orders/
-│       │   └── Index.jsx
-│       └── Products/
-│           └── Index.jsx
+│   │   └── AuthenticatedLayout.tsx
+│   ├── Pages/
+│   │   ├── Cart/
+│   │   │   └── Index.tsx
+│   │   ├── Orders/
+│   │   │   └── Index.tsx
+│   │   ├── Products/
+│   │   │   ├── Index.tsx
+│   │   │   └── Show.tsx
+│   │   └── Profile/
+│   │       └── Edit.tsx
+│   └── types/
+│       └── index.d.ts
 └── views/
     └── emails/
         ├── daily-sales-report.blade.php
-        └── low-stock-alert.blade.php
+        ├── low-stock-alert.blade.php (legacy)
+        └── low-stock-report.blade.php
 ```
 
 ## GitHub Repository Setup
@@ -415,10 +447,19 @@ if ($product->isLowStock()) {
 ```
 
 ### Task Scheduler Configuration
-Daily report scheduled in [routes/console.php](routes/console.php#L12-L14):
+Scheduled jobs configured in [routes/console.php](routes/console.php):
+
+**Daily Sales Report** (runs at 23:59):
 ```php
 Schedule::job(new SendDailySalesReport)
     ->dailyAt('23:59')
+    ->timezone(config('app.timezone'));
+```
+
+**Low Stock Report** (runs at 09:00):
+```php
+Schedule::job(new SendLowStockReport)
+    ->dailyAt('09:00')
     ->timezone(config('app.timezone'));
 ```
 
