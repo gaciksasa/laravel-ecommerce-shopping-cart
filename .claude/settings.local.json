@@ -23,7 +23,8 @@
       "Bash(while read file)",
       "Bash(do mv \"$file\" \"$file%.jsx.tsx\")",
       "Bash(done)",
-      "Bash(del \"C:\\\\wamp64\\\\www\\\\laravel-ecommerce-shopping-cart\\\\resources\\\\js\\\\Layouts\\\\AuthenticatedLayout.jsx\")"
+      "Bash(del \"C:\\\\wamp64\\\\www\\\\laravel-ecommerce-shopping-cart\\\\resources\\\\js\\\\Layouts\\\\AuthenticatedLayout.jsx\")",
+      "Bash(del \"resources\\\\js\\\\Pages\\\\Profile\\\\Edit.jsx\")"
     ]
   }
 }
