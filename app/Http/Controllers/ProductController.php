@@ -36,6 +36,20 @@ class ProductController extends Controller
 
         $products = $query->paginate(15)->withQueryString();
 
+        // Add quantity in cart for authenticated users
+        if (auth()->check()) {
+            $cartItems = auth()->user()->cartItems()->pluck('quantity', 'product_id');
+            $products->getCollection()->transform(function ($product) use ($cartItems) {
+                $product->quantity_in_cart = $cartItems->get($product->id, 0);
+                return $product;
+            });
+        } else {
+            $products->getCollection()->transform(function ($product) {
+                $product->quantity_in_cart = 0;
+                return $product;
+            });
+        }
+
         return Inertia::render('Products/Index', [
             'products' => $products,
             'filters' => [
@@ -47,6 +61,14 @@ class ProductController extends Controller
 
     public function show(Product $product): Response
     {
+        // Add quantity in cart for authenticated users
+        if (auth()->check()) {
+            $cartItem = auth()->user()->cartItems()->where('product_id', $product->id)->first();
+            $product->quantity_in_cart = $cartItem ? $cartItem->quantity : 0;
+        } else {
+            $product->quantity_in_cart = 0;
+        }
+
         return Inertia::render('Products/Show', [
             'product' => $product,
         ]);

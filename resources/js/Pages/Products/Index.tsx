@@ -127,15 +127,16 @@ export default function Index({ products, filters }: ProductsIndexProps) {
         }, {
             preserveScroll: true,
             onSuccess: () => {
-                setProcessing(false);
                 console.log('Item added to cart successfully!');
+                // Reload page data to get updated stock
+                router.reload({
+                    preserveScroll: true,
+                    onFinish: () => setProcessing(false),
+                });
             },
             onError: (errors) => {
                 setProcessing(false);
                 console.log('Error adding to cart:', errors);
-            },
-            onFinish: () => {
-                setProcessing(false);
             },
         });
     };
@@ -237,7 +238,9 @@ export default function Index({ products, filters }: ProductsIndexProps) {
                                 </div>
                             ) : (
                                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                                    {products.data.map((product) => (
+                                    {products.data.map((product) => {
+                                        const availableStock = product.stock_quantity - product.quantity_in_cart;
+                                        return (
                                     <div
                                         key={product.id}
                                         className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
@@ -282,16 +285,16 @@ export default function Index({ products, filters }: ProductsIndexProps) {
                                                 </span>
                                                 <span
                                                     className={`text-sm ${
-                                                        product.stock_quantity === 0
+                                                        availableStock === 0
                                                             ? 'text-red-600'
-                                                            : product.stock_quantity <= 5
+                                                            : availableStock <= 5
                                                               ? 'text-yellow-600'
                                                               : 'text-green-600'
                                                     }`}
                                                 >
-                                                    {product.stock_quantity === 0
+                                                    {availableStock === 0
                                                         ? 'Out of Stock'
-                                                        : `${product.stock_quantity} in stock`}
+                                                        : `${availableStock} in stock`}
                                                 </span>
                                             </div>
                                             <div className="flex gap-2">
@@ -305,12 +308,12 @@ export default function Index({ products, filters }: ProductsIndexProps) {
                                                     <button
                                                         onClick={() => handleAddToCart(product.id)}
                                                         disabled={
-                                                            product.stock_quantity === 0 ||
+                                                            availableStock === 0 ||
                                                             processing
                                                         }
                                                         className="flex-1 rounded-md bg-indigo-600 px-4 py-2 text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-400"
                                                     >
-                                                        {product.stock_quantity === 0
+                                                        {availableStock === 0
                                                             ? 'Out of Stock'
                                                             : 'Add to Cart'}
                                                     </button>
@@ -318,7 +321,8 @@ export default function Index({ products, filters }: ProductsIndexProps) {
                                             </div>
                                         </div>
                                         </div>
-                                    ))}
+                                    );
+                                    })}
                                 </div>
                             )}
 

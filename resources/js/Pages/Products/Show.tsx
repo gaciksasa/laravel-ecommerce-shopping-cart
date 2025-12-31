@@ -10,6 +10,9 @@ export default function Show({ product }: { product: Product }) {
     const [quantity, setQuantity] = useState(1);
     const [processing, setProcessing] = useState(false);
 
+    // Calculate available stock (total stock - quantity already in cart)
+    const availableStock = product.stock_quantity - product.quantity_in_cart;
+
     // Show toast notifications for flash messages
     useEffect(() => {
         if (flash?.success) {
@@ -28,21 +31,22 @@ export default function Show({ product }: { product: Product }) {
         }, {
             preserveScroll: true,
             onSuccess: () => {
-                setProcessing(false);
                 setQuantity(1);
+                // Reload page data to get updated stock
+                router.reload({
+                    preserveScroll: true,
+                    onFinish: () => setProcessing(false),
+                });
             },
             onError: (errors) => {
                 setProcessing(false);
                 console.log('Error adding to cart:', errors);
             },
-            onFinish: () => {
-                setProcessing(false);
-            },
         });
     };
 
     const incrementQuantity = () => {
-        if (quantity < product.stock_quantity) {
+        if (quantity < availableStock) {
             setQuantity(quantity + 1);
         }
     };
@@ -111,19 +115,19 @@ export default function Show({ product }: { product: Product }) {
                             Stock:{' '}
                             <span
                                 className={
-                                    product.stock_quantity > 0
+                                    availableStock > 0
                                         ? 'font-semibold text-green-600'
                                         : 'font-semibold text-red-600'
                                 }
                             >
-                                {product.stock_quantity > 0
-                                    ? `${product.stock_quantity} available`
+                                {availableStock > 0
+                                    ? `${availableStock} available`
                                     : 'Out of stock'}
                             </span>
                         </p>
                     </div>
 
-                    {auth.user && product.stock_quantity > 0 && (
+                    {auth.user && availableStock > 0 && (
                         <div className="mb-6">
                             <label className="mb-2 block text-sm font-medium text-gray-700">
                                 Quantity
@@ -143,7 +147,7 @@ export default function Show({ product }: { product: Product }) {
                                     <button
                                         onClick={incrementQuantity}
                                         disabled={
-                                            quantity >= product.stock_quantity ||
+                                            quantity >= availableStock ||
                                             processing
                                         }
                                         className="rounded-md bg-gray-200 px-4 py-2 font-semibold hover:bg-gray-300 disabled:cursor-not-allowed disabled:bg-gray-100"
@@ -156,7 +160,7 @@ export default function Show({ product }: { product: Product }) {
                     )}
 
                     {auth.user ? (
-                        product.stock_quantity > 0 ? (
+                        availableStock > 0 ? (
                             <button
                                 onClick={handleAddToCart}
                                 disabled={processing}
