@@ -33,6 +33,9 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                'cartCount' => $request->user()
+                    ? $request->user()->cartItems()->count()
+                    : 0,
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),

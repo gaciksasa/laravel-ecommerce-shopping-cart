@@ -6,7 +6,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
-    const user = usePage().props.auth.user;
+    const { user, cartCount } = usePage().props.auth;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
@@ -31,12 +31,6 @@ export default function AuthenticatedLayout({ header, children }) {
                                     Products
                                 </NavLink>
                                 <NavLink
-                                    href={route('cart.index')}
-                                    active={route().current('cart.index')}
-                                >
-                                    Cart
-                                </NavLink>
-                                <NavLink
                                     href={route('orders.index')}
                                     active={route().current('orders.index')}
                                 >
@@ -46,6 +40,31 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
+                            {/* Cart Icon with Badge */}
+                            <Link
+                                href={route('cart.index')}
+                                className="relative me-4 rounded-md p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                            >
+                                <svg
+                                    className="h-6 w-6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                                    />
+                                </svg>
+                                {cartCount > 0 && (
+                                    <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </Link>
+
                             <div className="relative ms-3">
                                 <Dropdown>
                                     <Dropdown.Trigger>
@@ -150,7 +169,14 @@ export default function AuthenticatedLayout({ header, children }) {
                             href={route('cart.index')}
                             active={route().current('cart.index')}
                         >
-                            Cart
+                            <div className="flex items-center justify-between">
+                                <span>Cart</span>
+                                {cartCount > 0 && (
+                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </div>
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             href={route('orders.index')}
