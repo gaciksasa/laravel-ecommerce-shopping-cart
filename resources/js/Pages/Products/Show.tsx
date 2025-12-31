@@ -34,7 +34,6 @@ export default function Show({ product }: { product: Product }) {
                 setQuantity(1);
                 // Reload page data to get updated stock
                 router.reload({
-                    preserveScroll: true,
                     onFinish: () => setProcessing(false),
                 });
             },

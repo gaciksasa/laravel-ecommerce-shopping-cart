@@ -130,7 +130,6 @@ export default function Index({ products, filters }: ProductsIndexProps) {
                 console.log('Item added to cart successfully!');
                 // Reload page data to get updated stock
                 router.reload({
-                    preserveScroll: true,
                     onFinish: () => setProcessing(false),
                 });
             },
