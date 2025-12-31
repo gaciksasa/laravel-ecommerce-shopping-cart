@@ -34,12 +34,6 @@ export default function AuthenticatedLayout({
                                 >
                                     Products
                                 </NavLink>
-                                <NavLink
-                                    href={route('orders.index')}
-                                    active={route().current('orders.index')}
-                                >
-                                    Orders
-                                </NavLink>
                             </div>
                         </div>
 
@@ -100,6 +94,11 @@ export default function AuthenticatedLayout({
                                             href={route('profile.edit')}
                                         >
                                             Profile
+                                        </Dropdown.Link>
+                                        <Dropdown.Link
+                                            href={route('orders.index')}
+                                        >
+                                            Orders
                                         </Dropdown.Link>
                                         <Dropdown.Link
                                             href={route('logout')}
@@ -182,12 +181,6 @@ export default function AuthenticatedLayout({
                                 )}
                             </div>
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            href={route('orders.index')}
-                            active={route().current('orders.index')}
-                        >
-                            Orders
-                        </ResponsiveNavLink>
                     </div>
 
                     <div className="border-t border-gray-200 pb-1 pt-4">
@@ -203,6 +196,9 @@ export default function AuthenticatedLayout({
                         <div className="mt-3 space-y-1">
                             <ResponsiveNavLink href={route('profile.edit')}>
                                 Profile
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('orders.index')}>
+                                Orders
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 method="post"
