@@ -114,15 +114,17 @@ export default function Show({ product }: { product: Product }) {
                         <p className="text-sm text-gray-600">
                             Stock:{' '}
                             <span
-                                className={
-                                    availableStock > 0
-                                        ? 'font-semibold text-green-600'
-                                        : 'font-semibold text-red-600'
-                                }
+                                className={`font-semibold ${
+                                    availableStock === 0
+                                        ? 'text-red-600'
+                                        : availableStock <= 5
+                                          ? 'text-yellow-600'
+                                          : 'text-green-600'
+                                }`}
                             >
-                                {availableStock > 0
-                                    ? `${availableStock} available`
-                                    : 'Out of stock'}
+                                {availableStock === 0
+                                    ? 'Out of Stock'
+                                    : `${availableStock} in stock`}
                             </span>
                         </p>
                     </div>
