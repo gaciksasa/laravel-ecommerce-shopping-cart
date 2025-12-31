@@ -1,11 +1,101 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
-export default function Index({ products }) {
+export default function Index({ products, filters }) {
     const { auth, flash } = usePage().props;
     const [processing, setProcessing] = useState(false);
+    const [sort, setSort] = useState(filters.sort || 'name_asc');
+    const searchTimeoutRef = useRef(null);
+    const searchInputRef = useRef(null);
+    const isTyping = useRef(false);
+
+    // Sync input value with server state only when not typing
+    useEffect(() => {
+        if (!isTyping.current && searchInputRef.current) {
+            searchInputRef.current.value = filters.search || '';
+        }
+    }, [filters.search]);
+
+    // Sync sort with server state
+    useEffect(() => {
+        if (!isTyping.current) {
+            setSort(filters.sort || 'name_asc');
+        }
+    }, [filters.sort]);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    const performSearch = (searchValue, sortValue) => {
+        router.get(
+            route('products.index'),
+            { search: searchValue, sort: sortValue },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+                only: ['products', 'filters'],
+                preserveFocus: true,
+                onSuccess: () => {
+                    // Mark typing as complete only after server response
+                    isTyping.current = false;
+
+                    // Restore focus to search input after Inertia updates
+                    if (searchInputRef.current && document.activeElement !== searchInputRef.current) {
+                        searchInputRef.current.focus();
+                    }
+                }
+            }
+        );
+    };
+
+    const debouncedSearch = (searchValue, sortValue) => {
+        // Clear any existing timeout
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
+        // Set new timeout - search will only trigger 500ms after last character
+        searchTimeoutRef.current = setTimeout(() => {
+            performSearch(searchValue, sortValue);
+        }, 500);
+    };
+
+    const handleSearchChange = (e) => {
+        const newSearch = e.target.value;
+
+        // Mark as typing to prevent server state from interfering
+        isTyping.current = true;
+
+        // Trigger debounced search - will only execute 500ms after user stops typing
+        // Read value directly from input, no React state needed
+        debouncedSearch(newSearch, sort);
+    };
+
+    const handleSortChange = (e) => {
+        const newSort = e.target.value;
+        setSort(newSort);
+        // Read current search value from input
+        const currentSearch = searchInputRef.current?.value || '';
+        performSearch(currentSearch, newSort);
+    };
+
+    const handleClearFilters = () => {
+        // Clear the input field directly
+        if (searchInputRef.current) {
+            searchInputRef.current.value = '';
+        }
+        setSort('name_asc');
+        performSearch('', 'name_asc');
+    };
 
     const handleAddToCart = (productId) => {
         setProcessing(true);
@@ -48,8 +138,96 @@ export default function Index({ products }) {
                                 </div>
                             )}
 
-                            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                                {products.data.map((product) => (
+                            {/* Search and Sort Filters */}
+                            <div className="mb-6 rounded-lg bg-gray-50 p-4">
+                                <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+                                    {/* Search Input */}
+                                    <div className="flex-1">
+                                        <label htmlFor="search" className="block text-sm font-medium text-gray-700">
+                                            Search Products
+                                        </label>
+                                        <input
+                                            ref={searchInputRef}
+                                            type="text"
+                                            id="search"
+                                            defaultValue={filters.search || ''}
+                                            onChange={handleSearchChange}
+                                            placeholder="Search by name or description..."
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                        />
+                                    </div>
+
+                                    {/* Sort Dropdown */}
+                                    <div className="flex-1">
+                                        <label htmlFor="sort" className="block text-sm font-medium text-gray-700">
+                                            Sort By
+                                        </label>
+                                        <select
+                                            id="sort"
+                                            value={sort}
+                                            onChange={handleSortChange}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                        >
+                                            <option value="name_asc">Name (A-Z)</option>
+                                            <option value="name_desc">Name (Z-A)</option>
+                                            <option value="price_asc">Price (Low to High)</option>
+                                            <option value="price_desc">Price (High to Low)</option>
+                                            <option value="stock_asc">Stock (Low to High)</option>
+                                            <option value="stock_desc">Stock (High to Low)</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Clear Button */}
+                                    {(filters.search || sort !== 'name_asc') && (
+                                        <div>
+                                            <button
+                                                type="button"
+                                                onClick={handleClearFilters}
+                                                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                            >
+                                                Clear Filters
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Results Count */}
+                            <div className="mb-4 text-sm text-gray-600">
+                                Showing {products.data.length} of {products.total} products
+                            </div>
+
+                            {products.data.length === 0 ? (
+                                <div className="rounded-lg bg-gray-50 p-12 text-center">
+                                    <svg
+                                        className="mx-auto h-12 w-12 text-gray-400"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    <h3 className="mt-2 text-sm font-medium text-gray-900">No products found</h3>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        Try adjusting your search or filter to find what you're looking for.
+                                    </p>
+                                    {(filters.search || sort !== 'name_asc') && (
+                                        <button
+                                            onClick={handleClearFilters}
+                                            className="mt-4 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                                        >
+                                            Clear all filters
+                                        </button>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                                    {products.data.map((product) => (
                                     <div
                                         key={product.id}
                                         className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
@@ -129,9 +307,10 @@ export default function Index({ products }) {
                                                 )}
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
 
                             {products.links.length > 3 && (
                                 <div className="mt-6 flex justify-center gap-1">
