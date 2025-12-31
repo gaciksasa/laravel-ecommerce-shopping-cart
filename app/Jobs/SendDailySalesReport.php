@@ -36,7 +36,7 @@ class SendDailySalesReport implements ShouldQueue
             'products_sold' => $this->getProductsSold($orders),
         ];
 
-        Mail::to('admin@example.com')
+        Mail::to('info@gacikdesign.com')
             ->send(new DailySalesReportMail($salesData));
     }
 

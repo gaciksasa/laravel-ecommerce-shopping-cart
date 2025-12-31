@@ -32,7 +32,7 @@ A full-featured e-commerce shopping cart application built with Laravel Breeze a
 - **Styling**: Tailwind CSS
 - **Database**: MySQL
 - **Queue**: Database driver
-- **Email**: Log driver (emails written to `storage/logs/laravel.log`)
+- **Email**: Mailtrap (development), SMTP (production)
 
 ## Installation
 
@@ -77,10 +77,33 @@ DB_USERNAME=root
 DB_PASSWORD=your_password
 
 QUEUE_CONNECTION=database
-MAIL_MAILER=log
 ```
 
-6. **Create database**
+6. **Configure email testing (Mailtrap)**
+
+For development, use [Mailtrap](https://mailtrap.io) to test email functionality without sending real emails:
+
+1. Sign up for free at [mailtrap.io](https://mailtrap.io)
+2. Go to **Email Testing** → **Inboxes** → **My Inbox**
+3. Select **Laravel 9+** from integrations
+4. Update `.env` with your Mailtrap credentials:
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your_mailtrap_username
+MAIL_PASSWORD=your_mailtrap_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+All emails (low stock alerts, daily sales reports) will appear in your Mailtrap inbox instead of being sent to real addresses.
+
+**For production**, update `.env` with real SMTP settings (e.g., Gmail, SendGrid, Loopia).
+
+7. **Create database**
 ```bash
 # Using MySQL CLI
 mysql -u root -p -e "CREATE DATABASE laravel_ecommerce CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
@@ -93,7 +116,7 @@ echo 'Database created successfully!';
 "
 ```
 
-7. **Run migrations and seeders**
+8. **Run migrations and seeders**
 ```bash
 php artisan migrate --seed
 ```
@@ -102,7 +125,7 @@ This will create all tables and seed:
 - Admin user (email: `admin@example.com`, password: `password`)
 - 10 sample products with varying stock levels
 
-8. **Build frontend assets**
+9. **Build frontend assets**
 ```bash
 # Development
 npm run dev
@@ -111,7 +134,7 @@ npm run dev
 npm run build
 ```
 
-9. **Start the application**
+10. **Start the application**
 
 Terminal 1 - Web server:
 ```bash
@@ -132,7 +155,7 @@ php artisan schedule:work
 * * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-10. **Access the application**
+11. **Access the application**
 ```
 http://localhost:8000
 ```
@@ -254,8 +277,8 @@ http://localhost:8000
 7. **Test low stock notification**
    - Add items to cart that will reduce stock to ≤ 5
    - Complete checkout
-   - Check `storage/logs/laravel.log` for low stock email
-   - Look for "Low Stock Alert" subject line
+   - Check your Mailtrap inbox for "Low Stock Alert" email
+   - Verify it contains product name and current stock level
 
 8. **Test daily sales report**
 ```bash
@@ -264,7 +287,8 @@ php artisan tinker
 >>> dispatch(new \App\Jobs\SendDailySalesReport);
 >>> exit
 
-# Check storage/logs/laravel.log for report email
+# Check your Mailtrap inbox for the daily sales report email
+# Report includes: total orders, revenue, and products sold breakdown
 ```
 
 9. **Test concurrency (optional)**
@@ -286,7 +310,14 @@ Watch for job processing:
 
 ### Email Inspection
 
-All emails are logged to `storage/logs/laravel.log`:
+**With Mailtrap (Recommended for Development)**:
+1. Log in to [mailtrap.io](https://mailtrap.io)
+2. Navigate to your inbox
+3. View all sent emails with full HTML rendering, headers, and attachments
+4. Test spam scores and email client compatibility
+
+**With Log Driver (Alternative)**:
+If using `MAIL_MAILER=log` in `.env`, emails are written to `storage/logs/laravel.log`:
 ```bash
 # Tail the log file
 tail -f storage/logs/laravel.log
@@ -399,11 +430,13 @@ Schedule::job(new SendDailySalesReport)
 php artisan queue:work --verbose
 ```
 
-### Issue: Emails not appearing in logs
+### Issue: Emails not being sent to Mailtrap
 **Solution**:
-1. Check `.env` has `MAIL_MAILER=log`
-2. Verify `storage/logs/laravel.log` exists and is writable
-3. Run: `php artisan config:clear`
+1. Verify `.env` has correct Mailtrap credentials
+2. Check queue worker is running: `php artisan queue:work`
+3. Check failed jobs: `php artisan queue:failed`
+4. Clear config cache: `php artisan config:clear`
+5. Verify internet connection (Mailtrap requires outbound SMTP access)
 
 ### Issue: Stock quantity not updating
 **Solution**: Check database transaction isolation level and ensure queue worker is processing jobs
