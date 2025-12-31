@@ -1,12 +1,23 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 export default function Show({ product }) {
     const { auth, flash } = usePage().props;
     const [quantity, setQuantity] = useState(1);
     const [processing, setProcessing] = useState(false);
+
+    // Show toast notifications for flash messages
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+    }, [flash]);
 
     const handleAddToCart = () => {
         setProcessing(true);
@@ -44,18 +55,6 @@ export default function Show({ product }) {
     const ProductContent = () => (
         <>
             <Head title={product.name} />
-
-            {flash?.success && (
-                <div className="mb-6 rounded-lg bg-green-50 p-4 text-green-800">
-                    {flash.success}
-                </div>
-            )}
-
-            {flash?.error && (
-                <div className="mb-6 rounded-lg bg-red-50 p-4 text-red-800">
-                    {flash.error}
-                </div>
-            )}
 
             <div className="mb-6">
                 <Link

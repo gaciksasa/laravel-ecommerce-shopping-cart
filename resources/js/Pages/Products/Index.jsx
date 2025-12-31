@@ -2,6 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { useState, useRef, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 export default function Index({ products, filters }) {
     const { auth, flash } = usePage().props;
@@ -33,6 +34,16 @@ export default function Index({ products, filters }) {
             }
         };
     }, []);
+
+    // Show toast notifications for flash messages
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+    }, [flash]);
 
     const performSearch = (searchValue, sortValue) => {
         router.get(
@@ -126,18 +137,6 @@ export default function Index({ products, filters }) {
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
-                            {flash?.success && (
-                                <div className="mb-4 rounded-lg bg-green-50 p-4 text-green-800">
-                                    {flash.success}
-                                </div>
-                            )}
-
-                            {flash?.error && (
-                                <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-800">
-                                    {flash.error}
-                                </div>
-                            )}
-
                             {/* Search and Sort Filters */}
                             <div className="mb-6 rounded-lg bg-gray-50 p-4">
                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end">

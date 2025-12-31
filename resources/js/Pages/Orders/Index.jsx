@@ -1,10 +1,21 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 export default function Index({ orders }) {
     const { flash } = usePage().props;
     const [expandedOrderId, setExpandedOrderId] = useState(null);
+
+    // Show toast notifications for flash messages
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+    }, [flash]);
 
     const toggleOrderDetails = (orderId) => {
         setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
@@ -34,18 +45,6 @@ export default function Index({ orders }) {
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
-                            {flash?.success && (
-                                <div className="mb-4 rounded-lg bg-green-50 p-4 text-green-800">
-                                    {flash.success}
-                                </div>
-                            )}
-
-                            {flash?.error && (
-                                <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-800">
-                                    {flash.error}
-                                </div>
-                            )}
-
                             {orders.data.length === 0 ? (
                                 <div className="py-12 text-center">
                                     <p className="mb-4 text-gray-500">
