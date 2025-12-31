@@ -2,9 +2,15 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { PageProps, CartItem } from '@/types';
 
-export default function Index({ cartItems, cartTotal }) {
-    const { flash } = usePage().props;
+interface CartIndexProps extends PageProps {
+    cartItems: CartItem[];
+    cartTotal: string | number;
+}
+
+export default function Index({ cartItems, cartTotal }: CartIndexProps) {
+    const { flash } = usePage<PageProps>().props;
     const [processing, setProcessing] = useState(false);
 
     // Show toast notifications for flash messages
@@ -17,7 +23,7 @@ export default function Index({ cartItems, cartTotal }) {
         }
     }, [flash]);
 
-    const handleUpdateQuantity = (cartItemId, currentQuantity, action) => {
+    const handleUpdateQuantity = (cartItemId: number, currentQuantity: number, action: 'increment' | 'decrement') => {
         const newQuantity = action === 'increment' ? currentQuantity + 1 : currentQuantity - 1;
 
         if (newQuantity < 1) return;
@@ -31,7 +37,7 @@ export default function Index({ cartItems, cartTotal }) {
         });
     };
 
-    const handleRemoveItem = (cartItemId) => {
+    const handleRemoveItem = (cartItemId: number) => {
         if (confirm('Are you sure you want to remove this item from your cart?')) {
             setProcessing(true);
             router.delete(route('cart.destroy', cartItemId), {
@@ -107,7 +113,7 @@ export default function Index({ cartItems, cartTotal }) {
                                                             </div>
                                                         </td>
                                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
-                                                            ${parseFloat(item.product.price).toFixed(2)}
+                                                            ${parseFloat(item.product.price.toString()).toFixed(2)}
                                                         </td>
                                                         <td className="whitespace-nowrap px-6 py-4">
                                                             <div className="flex items-center gap-2">
@@ -150,7 +156,7 @@ export default function Index({ cartItems, cartTotal }) {
                                                             </div>
                                                         </td>
                                                         <td className="whitespace-nowrap px-6 py-4 text-sm font-semibold text-gray-900">
-                                                            ${(item.quantity * parseFloat(item.product.price)).toFixed(2)}
+                                                            ${(item.quantity * parseFloat(item.product.price.toString())).toFixed(2)}
                                                         </td>
                                                         <td className="whitespace-nowrap px-6 py-4 text-sm">
                                                             <button
@@ -169,7 +175,7 @@ export default function Index({ cartItems, cartTotal }) {
 
                                     <div className="mt-6 flex flex-col items-end">
                                         <div className="mb-4 text-2xl font-bold">
-                                            Total: ${parseFloat(cartTotal).toFixed(2)}
+                                            Total: ${parseFloat(cartTotal.toString()).toFixed(2)}
                                         </div>
                                         <div className="flex gap-4">
                                             <a

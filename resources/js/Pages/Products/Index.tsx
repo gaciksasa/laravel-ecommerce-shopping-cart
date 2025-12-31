@@ -3,13 +3,24 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { useState, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { PageProps, Product, PaginatedData } from '@/types';
 
-export default function Index({ products, filters }) {
-    const { auth, flash } = usePage().props;
+interface Filters {
+    search?: string;
+    sort?: string;
+}
+
+interface ProductsIndexProps extends PageProps {
+    products: PaginatedData<Product>;
+    filters: Filters;
+}
+
+export default function Index({ products, filters }: ProductsIndexProps) {
+    const { auth, flash } = usePage<PageProps>().props;
     const [processing, setProcessing] = useState(false);
     const [sort, setSort] = useState(filters.sort || 'name_asc');
-    const searchTimeoutRef = useRef(null);
-    const searchInputRef = useRef(null);
+    const searchTimeoutRef = useRef<number | null>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
     const isTyping = useRef(false);
 
     // Sync input value with server state only when not typing
@@ -45,7 +56,7 @@ export default function Index({ products, filters }) {
         }
     }, [flash]);
 
-    const performSearch = (searchValue, sortValue) => {
+    const performSearch = (searchValue: string, sortValue: string) => {
         router.get(
             route('products.index'),
             { search: searchValue, sort: sortValue },
@@ -68,19 +79,19 @@ export default function Index({ products, filters }) {
         );
     };
 
-    const debouncedSearch = (searchValue, sortValue) => {
+    const debouncedSearch = (searchValue: string, sortValue: string) => {
         // Clear any existing timeout
         if (searchTimeoutRef.current) {
             clearTimeout(searchTimeoutRef.current);
         }
 
         // Set new timeout - search will only trigger 500ms after last character
-        searchTimeoutRef.current = setTimeout(() => {
+        searchTimeoutRef.current = window.setTimeout(() => {
             performSearch(searchValue, sortValue);
         }, 500);
     };
 
-    const handleSearchChange = (e) => {
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newSearch = e.target.value;
 
         // Mark as typing to prevent server state from interfering
@@ -91,7 +102,7 @@ export default function Index({ products, filters }) {
         debouncedSearch(newSearch, sort);
     };
 
-    const handleSortChange = (e) => {
+    const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newSort = e.target.value;
         setSort(newSort);
         // Read current search value from input
@@ -108,7 +119,7 @@ export default function Index({ products, filters }) {
         performSearch('', 'name_asc');
     };
 
-    const handleAddToCart = (productId) => {
+    const handleAddToCart = (productId: number) => {
         setProcessing(true);
         router.post(route('cart.store'), {
             product_id: productId,
@@ -267,7 +278,7 @@ export default function Index({ products, filters }) {
                                             </p>
                                             <div className="mb-4 flex items-center justify-between">
                                                 <span className="text-2xl font-bold text-gray-900">
-                                                    ${parseFloat(product.price).toFixed(2)}
+                                                    ${parseFloat(product.price.toString()).toFixed(2)}
                                                 </span>
                                                 <span
                                                     className={`text-sm ${

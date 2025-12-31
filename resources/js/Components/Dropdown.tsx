@@ -1,10 +1,16 @@
 import { Transition } from '@headlessui/react';
-import { Link } from '@inertiajs/react';
-import { createContext, useContext, useState } from 'react';
+import { Link, InertiaLinkProps } from '@inertiajs/react';
+import { createContext, useContext, useState, PropsWithChildren } from 'react';
 
-const DropDownContext = createContext();
+interface DropDownContextType {
+    open: boolean;
+    setOpen: (open: boolean) => void;
+    toggleOpen: () => void;
+}
 
-const Dropdown = ({ children }) => {
+const DropDownContext = createContext<DropDownContextType | undefined>(undefined);
+
+const Dropdown = ({ children }: PropsWithChildren) => {
     const [open, setOpen] = useState(false);
 
     const toggleOpen = () => {
@@ -18,8 +24,14 @@ const Dropdown = ({ children }) => {
     );
 };
 
-const Trigger = ({ children }) => {
-    const { open, setOpen, toggleOpen } = useContext(DropDownContext);
+const Trigger = ({ children }: PropsWithChildren) => {
+    const context = useContext(DropDownContext);
+
+    if (!context) {
+        throw new Error('Dropdown.Trigger must be used within a Dropdown');
+    }
+
+    const { open, setOpen, toggleOpen } = context;
 
     return (
         <>
@@ -35,13 +47,25 @@ const Trigger = ({ children }) => {
     );
 };
 
+interface ContentProps extends PropsWithChildren {
+    align?: 'left' | 'right';
+    width?: '48';
+    contentClasses?: string;
+}
+
 const Content = ({
     align = 'right',
     width = '48',
     contentClasses = 'py-1 bg-white',
     children,
-}) => {
-    const { open, setOpen } = useContext(DropDownContext);
+}: ContentProps) => {
+    const context = useContext(DropDownContext);
+
+    if (!context) {
+        throw new Error('Dropdown.Content must be used within a Dropdown');
+    }
+
+    const { open, setOpen } = context;
 
     let alignmentClasses = 'origin-top';
 
@@ -86,7 +110,11 @@ const Content = ({
     );
 };
 
-const DropdownLink = ({ className = '', children, ...props }) => {
+interface DropdownLinkProps extends InertiaLinkProps {
+    className?: string;
+}
+
+const DropdownLink = ({ className = '', children, ...props }: DropdownLinkProps) => {
     return (
         <Link
             {...props}

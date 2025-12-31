@@ -17,7 +17,13 @@
       "Bash(git add:*)",
       "Bash(gh:*)",
       "Bash(test:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(move:*)",
+      "Bash(del C:wamp64wwwlaravel-ecommerce-shopping-cartvite.config.js)",
+      "Bash(while read file)",
+      "Bash(do mv \"$file\" \"$file%.jsx.tsx\")",
+      "Bash(done)",
+      "Bash(del \"C:\\\\wamp64\\\\www\\\\laravel-ecommerce-shopping-cart\\\\resources\\\\js\\\\Layouts\\\\AuthenticatedLayout.jsx\")"
     ]
   }
 }

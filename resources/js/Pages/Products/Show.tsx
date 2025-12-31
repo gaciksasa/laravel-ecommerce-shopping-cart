@@ -3,9 +3,10 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { PageProps, Product } from '@/types';
 
-export default function Show({ product }) {
-    const { auth, flash } = usePage().props;
+export default function Show({ product }: { product: Product }) {
+    const { auth, flash } = usePage<PageProps>().props;
     const [quantity, setQuantity] = useState(1);
     const [processing, setProcessing] = useState(false);
 
@@ -95,7 +96,7 @@ export default function Show({ product }) {
 
                     <div className="mb-6">
                         <p className="text-4xl font-bold text-indigo-600">
-                            ${parseFloat(product.price).toFixed(2)}
+                            ${parseFloat(product.price.toString()).toFixed(2)}
                         </p>
                     </div>
 

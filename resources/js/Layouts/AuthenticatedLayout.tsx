@@ -3,10 +3,14 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { PropsWithChildren, ReactNode, useState } from 'react';
+import { PageProps } from '@/types';
 
-export default function AuthenticatedLayout({ header, children }) {
-    const { user, cartCount } = usePage().props.auth;
+export default function AuthenticatedLayout({
+    header,
+    children
+}: PropsWithChildren<{ header?: ReactNode }>) {
+    const { user, cartCount } = usePage<PageProps>().props.auth;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);

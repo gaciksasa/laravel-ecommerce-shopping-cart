@@ -2,10 +2,15 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { PageProps, Order, PaginatedData } from '@/types';
 
-export default function Index({ orders }) {
-    const { flash } = usePage().props;
-    const [expandedOrderId, setExpandedOrderId] = useState(null);
+interface OrdersIndexProps extends PageProps {
+    orders: PaginatedData<Order>;
+}
+
+export default function Index({ orders }: OrdersIndexProps) {
+    const { flash } = usePage<PageProps>().props;
+    const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
 
     // Show toast notifications for flash messages
     useEffect(() => {
@@ -17,12 +22,12 @@ export default function Index({ orders }) {
         }
     }, [flash]);
 
-    const toggleOrderDetails = (orderId) => {
+    const toggleOrderDetails = (orderId: number) => {
         setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
     };
 
-    const getStatusBadgeClass = (status) => {
-        const classes = {
+    const getStatusBadgeClass = (status: Order['status']) => {
+        const classes: Record<Order['status'], string> = {
             pending: 'bg-yellow-100 text-yellow-800',
             processing: 'bg-blue-100 text-blue-800',
             completed: 'bg-green-100 text-green-800',
@@ -94,7 +99,7 @@ export default function Index({ orders }) {
                                                     </div>
                                                     <div className="flex items-center gap-4">
                                                         <p className="text-lg font-bold text-gray-900">
-                                                            ${parseFloat(order.total_amount).toFixed(2)}
+                                                            ${parseFloat(order.total_amount.toString()).toFixed(2)}
                                                         </p>
                                                         <svg
                                                             className={`h-5 w-5 transform transition-transform ${
@@ -147,7 +152,7 @@ export default function Index({ orders }) {
                                                                         <td className="whitespace-nowrap px-4 py-2 text-sm text-gray-900">
                                                                             $
                                                                             {parseFloat(
-                                                                                item.price,
+                                                                                item.price.toString(),
                                                                             ).toFixed(2)}
                                                                         </td>
                                                                         <td className="whitespace-nowrap px-4 py-2 text-sm text-gray-900">
@@ -157,7 +162,7 @@ export default function Index({ orders }) {
                                                                             $
                                                                             {(
                                                                                 item.quantity *
-                                                                                parseFloat(item.price)
+                                                                                parseFloat(item.price.toString())
                                                                             ).toFixed(2)}
                                                                         </td>
                                                                     </tr>

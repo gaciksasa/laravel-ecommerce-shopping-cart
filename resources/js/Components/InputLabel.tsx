@@ -1,9 +1,16 @@
+import { LabelHTMLAttributes, PropsWithChildren } from 'react';
+
+interface InputLabelProps extends LabelHTMLAttributes<HTMLLabelElement> {
+    value?: string;
+    className?: string;
+}
+
 export default function InputLabel({
     value,
     className = '',
     children,
     ...props
-}) {
+}: PropsWithChildren<InputLabelProps>) {
     return (
         <label
             {...props}
